@@ -1,0 +1,194 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-lavender: #CBB3E8;
+    --color-chartreuse: #D4FF3F;
+    --color-tomato: #E34234;
+    --color-deep-lavender: #8A6BC2;
+    --color-dark-lavender: #2A1F45;
+    --color-soft-lavender: #E9DDF6;
+    --color-light-lavender: #F3EBFA;
+    --color-deep-tomato: #B8301F;
+    --color-muted-chartreuse: #EAF7A8;
+    --color-secondary-text: #6B5B86;
+    --color-border: #B9A0DA;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #2A1F45;
+    background-color: #CBB3E8;
+    background-image:
+      radial-gradient(circle at 12% 16%, rgba(212, 255, 63, 0.28) 0%, transparent 38%),
+      radial-gradient(circle at 88% 20%, rgba(227, 66, 52, 0.22) 0%, transparent 42%),
+      radial-gradient(circle at 50% 55%, rgba(138, 107, 194, 0.45) 0%, transparent 52%),
+      radial-gradient(circle at 80% 85%, rgba(234, 247, 168, 0.35) 0%, transparent 40%),
+      linear-gradient(135deg, #CBB3E8 0%, #8A6BC2 48%, #CBB3E8 100%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: 'Playfair Display', Georgia, serif;
+    letter-spacing: -0.02em;
+  }
+
+  .tabular-nums, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@keyframes flowPulse {
+  0% {
+    stroke-dashoffset: 24;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes floatTorusPrimary {
+  0%, 100% {
+    transform: translate3d(0px, 0px, 0px) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translate3d(8px, -14px, 0px) rotate(2.2deg) scale(1.015);
+  }
+  50% {
+    transform: translate3d(-4px, -22px, 0px) rotate(-1.2deg) scale(1.025);
+  }
+  75% {
+    transform: translate3d(-10px, -9px, 0px) rotate(-2.4deg) scale(1.01);
+  }
+}
+
+@keyframes floatTorusSecondary {
+  0%, 100% {
+    transform: translate3d(0px, 0px, 0px) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translate3d(-9px, -12px, 0px) rotate(-2.5deg) scale(1.02);
+  }
+  50% {
+    transform: translate3d(6px, -19px, 0px) rotate(1.8deg) scale(0.99);
+  }
+  75% {
+    transform: translate3d(11px, -7px, 0px) rotate(2.6deg) scale(1.015);
+  }
+}
+
+@keyframes floatRibbonOverpass {
+  0%, 100% {
+    transform: translate3d(0px, 0px, 0px) rotate(0deg);
+  }
+  33% {
+    transform: translate3d(7px, -16px, 0px) rotate(2.8deg);
+  }
+  66% {
+    transform: translate3d(-8px, -10px, 0px) rotate(-2.2deg);
+  }
+}
+
+@keyframes floatOrb {
+  0%, 100% {
+    transform: translate3d(0px, 0px, 0px) scale(1);
+  }
+  35% {
+    transform: translate3d(6px, -16px, 0px) scale(1.04);
+  }
+  70% {
+    transform: translate3d(-5px, -9px, 0px) scale(0.98);
+  }
+}
+
+@keyframes rimGlowPulse {
+  0%, 100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.78;
+  }
+}
+
+.animate-flow {
+  stroke-dasharray: 6 6;
+  animation: flowPulse 1.2s linear infinite;
+}
+
+.animate-float-slow {
+  animation: floatSlow 5s ease-in-out infinite;
+}
+
+.animate-torus-primary {
+  transform-origin: 330px 255px;
+  animation: floatTorusPrimary 5.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  will-change: transform;
+}
+
+.animate-torus-secondary {
+  transform-origin: 350px 265px;
+  animation: floatTorusSecondary 5.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  will-change: transform;
+}
+
+.animate-ribbon-overpass {
+  transform-origin: 340px 340px;
+  animation: floatRibbonOverpass 4.8s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-orb-float {
+  transform-origin: center;
+  animation: floatOrb 4.6s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-rim-glow {
+  animation: rimGlowPulse 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-flow,
+  .animate-float-slow,
+  .animate-torus-primary,
+  .animate-torus-secondary,
+  .animate-ribbon-overpass,
+  .animate-orb-float,
+  .animate-rim-glow {
+    animation: none !important;
+  }
+}
+
+.bg-lavender-mesh {
+  background-color: #CBB3E8;
+  background-image:
+    radial-gradient(circle at 14% 18%, rgba(212, 255, 63, 0.28) 0%, transparent 40%),
+    radial-gradient(circle at 86% 24%, rgba(227, 66, 52, 0.20) 0%, transparent 44%),
+    radial-gradient(circle at 48% 60%, rgba(138, 107, 194, 0.48) 0%, transparent 52%),
+    radial-gradient(circle at 75% 84%, rgba(234, 247, 168, 0.34) 0%, transparent 40%),
+    linear-gradient(135deg, #CBB3E8 0%, #B9A0DA 48%, #CBB3E8 100%);
+}
+
+/* Ensure pale lavender card backgrounds never look white or flat */
+.bg-\[\#F3EBFA\] {
+  background-color: #CBB3E8 !important;
+  background-image: linear-gradient(135deg, #E9DDF6 0%, #CBB3E8 62%, #EAF7A8 100%) !important;
+}
+
+.bg-\[\#E9DDF6\] {
+  background-color: #CBB3E8 !important;
+  background-image: linear-gradient(135deg, #CBB3E8 0%, #E9DDF6 55%, #B9A0DA 100%) !important;
+}
+

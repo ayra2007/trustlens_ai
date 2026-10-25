@@ -1,0 +1,394 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Public analyst or reviewer profile metadata isolated from sensitive credentials.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the user.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the analyst or reviewer.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "role": {
+          "type": "string",
+          "description": "Assigned role in the research workspace.",
+          "enum": ["Analyst", "Reviewer"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": ["uid", "name", "role", "createdAt", "updatedAt"]
+    },
+    "UserPrivateInfo": {
+      "title": "UserPrivateInfo",
+      "description": "Isolated PII document storing the user's verified email address.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Verified user email address.",
+          "minLength": 3,
+          "maxLength": 254
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": ["uid", "email", "createdAt", "updatedAt"]
+    },
+    "ResearchProject": {
+      "title": "ResearchProject",
+      "description": "Full multi-agent financial research project document including sources, financials, metrics, ratios, claims, risks, agents, report, reviews, pipeline events, and NIST controls.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique project identifier.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the owning user.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "companyName": {
+          "type": "string",
+          "description": "Full legal name of the company.",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "ticker": {
+          "type": "string",
+          "description": "Company ticker symbol.",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "sector": {
+          "type": "string",
+          "description": "Industry sector classification.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "fiscalYearEnd": {
+          "type": "string",
+          "description": "Fiscal year-end date label.",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "dataOrigin": {
+          "type": "string",
+          "description": "Data provenance classification.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "status": {
+          "type": "string",
+          "description": "Current workflow status of the project.",
+          "enum": ["Queued", "Processing", "Completed", "Needs Review", "Failed"]
+        },
+        "reviewerStatus": {
+          "type": "string",
+          "description": "Human review sign-off state.",
+          "enum": ["Needs Review", "In Review", "Approved", "Changes Requested"]
+        },
+        "workspaceData": {
+          "type": "object",
+          "description": "Native structured map holding sources, financials, metrics, ratios, claims, risks, agents, report, reviews, pipelineEvents, and nistChecklist."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "id",
+        "ownerId",
+        "companyName",
+        "ticker",
+        "sector",
+        "fiscalYearEnd",
+        "dataOrigin",
+        "status",
+        "reviewerStatus",
+        "workspaceData",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AuditEntry": {
+      "title": "AuditEntry",
+      "description": "Immutable governance audit log entry recording user and orchestrator actions.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique audit log entry ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the owning user.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "actor": {
+          "type": "string",
+          "description": "Name of the actor who triggered the event.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "actorRole": {
+          "type": "string",
+          "description": "Role of the actor.",
+          "enum": ["Analyst", "Reviewer", "System Orchestrator"]
+        },
+        "action": {
+          "type": "string",
+          "description": "Summary of the action performed.",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "targetType": {
+          "type": "string",
+          "description": "Entity type targeted by the action.",
+          "enum": [
+            "Project",
+            "Source",
+            "Metric",
+            "Ratio",
+            "Claim",
+            "Risk",
+            "Agent",
+            "Report",
+            "Auth",
+            "Watchlist",
+            "Settings"
+          ]
+        },
+        "targetId": {
+          "type": "string",
+          "description": "Target entity identifier.",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "targetLabel": {
+          "type": "string",
+          "description": "Human-readable target label.",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "targetRoute": {
+          "type": "string",
+          "description": "Deep-link route for inspection.",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "details": {
+          "type": "string",
+          "description": "Detailed audit description.",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "eventTimestamp": {
+          "type": "string",
+          "description": "ISO timestamp string for display.",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        }
+      },
+      "required": [
+        "id",
+        "ownerId",
+        "actor",
+        "actorRole",
+        "action",
+        "targetType",
+        "targetId",
+        "targetLabel",
+        "targetRoute",
+        "details",
+        "eventTimestamp",
+        "createdAt"
+      ]
+    },
+    "WatchlistItem": {
+      "title": "WatchlistItem",
+      "description": "Tracked financial research alert item on the user's watchlist.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique watchlist item ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the owning user.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Associated project ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "companyName": {
+          "type": "string",
+          "description": "Company name.",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "ticker": {
+          "type": "string",
+          "description": "Ticker symbol.",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "dataOrigin": {
+          "type": "string",
+          "description": "Data origin badge label.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "alertHeadline": {
+          "type": "string",
+          "description": "Alert headline text.",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "alertDetail": {
+          "type": "string",
+          "description": "Detailed alert explanation.",
+          "minLength": 1,
+          "maxLength": 600
+        },
+        "severity": {
+          "type": "string",
+          "description": "Alert severity level.",
+          "enum": ["Info", "Warning", "Critical"]
+        },
+        "targetRoute": {
+          "type": "string",
+          "description": "Deep-link route to inspect alert.",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "addedAt": {
+          "type": "string",
+          "description": "ISO timestamp when added.",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "trackedRatioIds": {
+          "type": "string",
+          "description": "Comma-separated or bounded list of tracked ratio IDs.",
+          "minLength": 0,
+          "maxLength": 200
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "id",
+        "ownerId",
+        "projectId",
+        "companyName",
+        "ticker",
+        "dataOrigin",
+        "alertHeadline",
+        "alertDetail",
+        "severity",
+        "targetRoute",
+        "addedAt",
+        "trackedRatioIds",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Public user profile metadata (no PII)."
+    },
+    "/users/{userId}/private/{docId}": {
+      "schema": { "$ref": "#/entities/UserPrivateInfo" },
+      "description": "Split-collection private PII document storing the user's verified email."
+    },
+    "/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/ResearchProject" },
+      "description": "User-owned multi-agent financial research projects."
+    },
+    "/auditEntries/{auditId}": {
+      "schema": { "$ref": "#/entities/AuditEntry" },
+      "description": "Immutable user-owned governance and provenance audit log entries."
+    },
+    "/watchlist/{itemId}": {
+      "schema": { "$ref": "#/entities/WatchlistItem" },
+      "description": "User-owned financial research watchlist alerts."
+    }
+  }
+}

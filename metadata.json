@@ -1,0 +1,6 @@
+{
+  "name": "TrustLens",
+  "description": "Trustworthy Multi-Agent Financial Research & Decision Support System with deterministic ratio verification, source traceability, and human review workflows.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

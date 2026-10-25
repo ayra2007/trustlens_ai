@@ -1,0 +1,359 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Pillar 1: Global Default-Deny Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Core Hardened Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isOwner(userId) {
+      return isVerifiedUser() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isVerifiedUser() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        request.auth.token.email == 'ayrasuthar24@gmail.com'
+      );
+    }
+
+    // Validation Blueprint: UserProfile (/users/{userId})
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'name', 'role', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['uid', 'name', 'role', 'createdAt', 'updatedAt']) &&
+        data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.uid == request.auth.uid &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 120 &&
+        data.role is string && data.role.size() <= 20 && (data.role == 'Analyst' || data.role == 'Reviewer') &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    // Validation Blueprint: UserPrivateInfo (/users/{userId}/private/{docId})
+    function isValidUserPrivateInfo(data) {
+      return data.keys().hasAll(['uid', 'email', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['uid', 'email', 'createdAt', 'updatedAt']) &&
+        data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.uid == request.auth.uid &&
+        data.email is string && data.email.size() >= 3 && data.email.size() <= 254 &&
+        data.email == request.auth.token.email &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    // Validation Blueprint: ResearchProject (/projects/{projectId})
+    function isValidResearchProject(data) {
+      return data.keys().hasAll([
+          'id',
+          'ownerId',
+          'companyName',
+          'ticker',
+          'sector',
+          'fiscalYearEnd',
+          'dataOrigin',
+          'status',
+          'reviewerStatus',
+          'workspaceData',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id',
+          'ownerId',
+          'companyName',
+          'ticker',
+          'sector',
+          'fiscalYearEnd',
+          'dataOrigin',
+          'status',
+          'reviewerStatus',
+          'workspaceData',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.id is string && data.id.size() >= 1 && data.id.size() <= 128 && data.id.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerId == request.auth.uid &&
+        data.companyName is string && data.companyName.size() >= 1 && data.companyName.size() <= 200 &&
+        data.ticker is string && data.ticker.size() >= 1 && data.ticker.size() <= 20 &&
+        data.sector is string && data.sector.size() >= 1 && data.sector.size() <= 120 &&
+        data.fiscalYearEnd is string && data.fiscalYearEnd.size() >= 1 && data.fiscalYearEnd.size() <= 40 &&
+        data.dataOrigin is string && data.dataOrigin.size() >= 1 && data.dataOrigin.size() <= 80 &&
+        data.status is string && data.status.size() <= 30 &&
+        (data.status == 'Queued' || data.status == 'Processing' || data.status == 'Completed' || data.status == 'Needs Review' || data.status == 'Failed') &&
+        data.reviewerStatus is string && data.reviewerStatus.size() <= 30 &&
+        (data.reviewerStatus == 'Needs Review' || data.reviewerStatus == 'In Review' || data.reviewerStatus == 'Approved' || data.reviewerStatus == 'Changes Requested') &&
+        data.workspaceData is map && data.workspaceData.size() <= 30 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    // Validation Blueprint: AuditEntry (/auditEntries/{auditId})
+    function isValidAuditEntry(data) {
+      return data.keys().hasAll([
+          'id',
+          'ownerId',
+          'actor',
+          'actorRole',
+          'action',
+          'targetType',
+          'targetId',
+          'targetLabel',
+          'targetRoute',
+          'details',
+          'eventTimestamp',
+          'createdAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id',
+          'ownerId',
+          'actor',
+          'actorRole',
+          'action',
+          'targetType',
+          'targetId',
+          'targetLabel',
+          'targetRoute',
+          'details',
+          'eventTimestamp',
+          'createdAt'
+        ]) &&
+        data.id is string && data.id.size() >= 1 && data.id.size() <= 128 && data.id.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerId == request.auth.uid &&
+        data.actor is string && data.actor.size() >= 1 && data.actor.size() <= 120 &&
+        data.actorRole is string && data.actorRole.size() <= 30 &&
+        (data.actorRole == 'Analyst' || data.actorRole == 'Reviewer' || data.actorRole == 'System Orchestrator') &&
+        data.action is string && data.action.size() >= 1 && data.action.size() <= 300 &&
+        data.targetType is string && data.targetType.size() >= 1 && data.targetType.size() <= 30 &&
+        (
+          data.targetType == 'Project' ||
+          data.targetType == 'Source' ||
+          data.targetType == 'Metric' ||
+          data.targetType == 'Ratio' ||
+          data.targetType == 'Claim' ||
+          data.targetType == 'Risk' ||
+          data.targetType == 'Agent' ||
+          data.targetType == 'Report' ||
+          data.targetType == 'Auth' ||
+          data.targetType == 'Watchlist' ||
+          data.targetType == 'Settings'
+        ) &&
+        data.targetId is string && data.targetId.size() >= 1 && data.targetId.size() <= 128 &&
+        data.targetLabel is string && data.targetLabel.size() >= 1 && data.targetLabel.size() <= 200 &&
+        data.targetRoute is string && data.targetRoute.size() >= 1 && data.targetRoute.size() <= 300 &&
+        data.details is string && data.details.size() >= 1 && data.details.size() <= 1000 &&
+        data.eventTimestamp is string && data.eventTimestamp.size() >= 1 && data.eventTimestamp.size() <= 64 &&
+        data.createdAt is timestamp;
+    }
+
+    // Validation Blueprint: WatchlistItem (/watchlist/{itemId})
+    function isValidWatchlistItem(data) {
+      return data.keys().hasAll([
+          'id',
+          'ownerId',
+          'projectId',
+          'companyName',
+          'ticker',
+          'dataOrigin',
+          'alertHeadline',
+          'alertDetail',
+          'severity',
+          'targetRoute',
+          'addedAt',
+          'trackedRatioIds',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id',
+          'ownerId',
+          'projectId',
+          'companyName',
+          'ticker',
+          'dataOrigin',
+          'alertHeadline',
+          'alertDetail',
+          'severity',
+          'targetRoute',
+          'addedAt',
+          'trackedRatioIds',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.id is string && data.id.size() >= 1 && data.id.size() <= 128 && data.id.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerId == request.auth.uid &&
+        data.projectId is string && data.projectId.size() >= 1 && data.projectId.size() <= 128 && data.projectId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.companyName is string && data.companyName.size() >= 1 && data.companyName.size() <= 200 &&
+        data.ticker is string && data.ticker.size() >= 1 && data.ticker.size() <= 20 &&
+        data.dataOrigin is string && data.dataOrigin.size() >= 1 && data.dataOrigin.size() <= 80 &&
+        data.alertHeadline is string && data.alertHeadline.size() >= 1 && data.alertHeadline.size() <= 300 &&
+        data.alertDetail is string && data.alertDetail.size() >= 1 && data.alertDetail.size() <= 600 &&
+        data.severity is string && data.severity.size() <= 20 &&
+        (data.severity == 'Info' || data.severity == 'Warning' || data.severity == 'Critical') &&
+        data.targetRoute is string && data.targetRoute.size() >= 1 && data.targetRoute.size() <= 300 &&
+        data.addedAt is string && data.addedAt.size() >= 1 && data.addedAt.size() <= 64 &&
+        data.trackedRatioIds is string && data.trackedRatioIds.size() <= 200 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    // Admins lookup collection (Read-only for self/admin, never client-writable)
+    match /admins/{adminId} {
+      allow get: if isVerifiedUser() && isValidId(adminId) && request.auth.uid == adminId;
+      allow list, create, update, delete: if false;
+    }
+
+    // Public User Profile (/users/{userId}) - No PII stored here
+    match /users/{userId} {
+      allow get: if isVerifiedUser() && isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if false;
+      allow create: if isOwner(userId) &&
+        isValidId(userId) &&
+        isValidUserProfile(incoming()) &&
+        incoming().uid == userId &&
+        (incoming().role == 'Analyst' || isAdmin()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isOwner(userId) &&
+        isValidId(userId) &&
+        isValidUserProfile(incoming()) &&
+        incoming().uid == existing().uid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          (incoming().role == existing().role && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'updatedAt'])) ||
+          (isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'role', 'updatedAt']))
+        );
+      allow delete: if false;
+
+      // Split Collection for PII (/users/{userId}/private/{docId})
+      match /private/{docId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(docId) &&
+          exists(/databases/$(database)/documents/users/$(userId));
+        allow list: if false;
+        allow create: if isOwner(userId) &&
+          isValidId(userId) &&
+          isValidId(docId) &&
+          docId == 'info' &&
+          isValidUserPrivateInfo(incoming()) &&
+          incoming().uid == userId &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          existsAfter(/databases/$(database)/documents/users/$(userId));
+        allow update: if isOwner(userId) &&
+          isValidId(userId) &&
+          isValidId(docId) &&
+          isValidUserPrivateInfo(incoming()) &&
+          incoming().uid == existing().uid &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          exists(/databases/$(database)/documents/users/$(userId)) &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['email', 'updatedAt']);
+        allow delete: if false;
+      }
+    }
+
+    // Research Projects (/projects/{projectId})
+    match /projects/{projectId} {
+      allow get: if isVerifiedUser() && isValidId(projectId) && (existing().ownerId == request.auth.uid || isAdmin());
+      allow list: if isVerifiedUser() && existing().ownerId == request.auth.uid;
+      allow create: if isVerifiedUser() &&
+        isValidId(projectId) &&
+        isValidResearchProject(incoming()) &&
+        incoming().id == projectId &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() &&
+        isValidId(projectId) &&
+        isValidResearchProject(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().id == existing().id &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (existing().reviewerStatus != 'Approved' || isAdmin() || incoming().reviewerStatus == 'Needs Review') &&
+        (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'companyName',
+            'ticker',
+            'sector',
+            'fiscalYearEnd',
+            'dataOrigin',
+            'status',
+            'reviewerStatus',
+            'workspaceData',
+            'updatedAt'
+          ]) || isAdmin()
+        );
+      allow delete: if isVerifiedUser() && isValidId(projectId) && existing().ownerId == request.auth.uid;
+    }
+
+    // Immutable Governance Audit Log (/auditEntries/{auditId})
+    match /auditEntries/{auditId} {
+      allow get: if isVerifiedUser() && isValidId(auditId) && (existing().ownerId == request.auth.uid || isAdmin());
+      allow list: if isVerifiedUser() && existing().ownerId == request.auth.uid;
+      allow create: if isVerifiedUser() &&
+        isValidId(auditId) &&
+        isValidAuditEntry(incoming()) &&
+        incoming().id == auditId &&
+        incoming().createdAt == request.time;
+      allow update, delete: if false;
+    }
+
+    // Watchlist Alerts (/watchlist/{itemId})
+    match /watchlist/{itemId} {
+      allow get: if isVerifiedUser() && isValidId(itemId) && (existing().ownerId == request.auth.uid || isAdmin());
+      allow list: if isVerifiedUser() && existing().ownerId == request.auth.uid;
+      allow create: if isVerifiedUser() &&
+        isValidId(itemId) &&
+        isValidWatchlistItem(incoming()) &&
+        incoming().id == itemId &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        exists(/databases/$(database)/documents/projects/$(incoming().projectId)) &&
+        get(/databases/$(database)/documents/projects/$(incoming().projectId)).data.ownerId == request.auth.uid;
+      allow update: if isVerifiedUser() &&
+        isValidId(itemId) &&
+        isValidWatchlistItem(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().id == existing().id &&
+        incoming().projectId == existing().projectId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'alertHeadline',
+          'alertDetail',
+          'severity',
+          'targetRoute',
+          'trackedRatioIds',
+          'updatedAt'
+        ]);
+      allow delete: if isVerifiedUser() && isValidId(itemId) && existing().ownerId == request.auth.uid;
+    }
+  }
+}
